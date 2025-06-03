@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+<PageTitle>College Event System</PageTitle>
+
+<div class="container-fluid">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+            <a class="navbar-brand" href="/">CES</a>
+
+            <NavLink class="nav-link text-light" href="/">Home</NavLink>
+            <NavLink class="nav-link text-light" href="/events">Events</NavLink>
+
+            @if (newUser == null || !newUser.Identity.IsAuthenticated)
+            {
+                <NavLink class="nav-link text-light" href="/register">Register</NavLink>
+                <NavLink class="nav-link text-light" href="/login">Login</NavLink>
+            }
+            else
+            {
+                <NavLink class="nav-link text-light" href="/logout">Logout</NavLink>
+
+                @if (newUser.IsInRole("Admin"))
+                {
+                    <NavLink class="nav-link text-light" href="/admin">Admin</NavLink>
+                }
+            }
+        </nav>
+    </header>
+
+
+        <div class="container mt-4">
+            @Body
+        </div>
+</div>
+
+@code {
+    private ClaimsPrincipal newUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        newUser = authState.User;
+    }
+}
