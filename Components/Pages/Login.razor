@@ -1,14 +1,15 @@
 ﻿@page "/login"
 @using Microsoft.EntityFrameworkCore
 @using System.ComponentModel.DataAnnotations
-
+@using College_Event_System_Final.Services
 @inject AppDbContext _context
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
 @using College_Event_System_Final.Helpers
 @using College_Event_System_Final.Models
 @rendermode InteractiveServer
-    
+ @inject UserSessionService UserSession
+
 <h3>Login</h3>
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
@@ -54,25 +55,65 @@
         ErrorMessage = null;
     }
 
+    // private async Task HandleLogin()
+    // {
+    //     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == Input.Email.Trim().ToLower());
+    //     if (user == null || !PasswordHelper.VerifyPassword(user, user.Password, Input.Password))
+    //     {
+    //         ErrorMessage = "Invalid email or password.";
+    //         return;
+    //     }
+    //     var httpContext = HttpContextAccessor.HttpContext;
+    //     if (httpContext == null)
+    //     {
+    //         ErrorMessage = "Session not available.";
+    //         return;
+    //     }
+    //     httpContext.Session.SetString("UserID", user.UserID.ToString());
+
+    //     HttpContextAccessor.HttpContext!.Session.SetString("UserID", user.UserID.ToString());
+    //     HttpContextAccessor.HttpContext!.Session.SetString("UserRole", user.Role);
+
+    //     if (user.Role == "Admin")
+    //     {
+    //         NavigationManager.NavigateTo("/adminDashboard");
+    //     }
+    //     else if (user.Role == "Student")
+    //     {
+    //         NavigationManager.NavigateTo("/studentdashboard");
+    //     }
+    // }
+
     private async Task HandleLogin()
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == Input.Email.Trim().ToLower());
-        if (user == null || !PasswordHelper.VerifyPassword(user, user.Password, Input.Password))
+        try
         {
-            ErrorMessage = "Invalid email or password.";
-            return;
-        }
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == Input.Email.Trim().ToLower());
 
-        HttpContextAccessor.HttpContext!.Session.SetString("UserID", user.UserID.ToString());
-        HttpContextAccessor.HttpContext!.Session.SetString("UserRole", user.Role);
+            if (user == null || !PasswordHelper.VerifyPassword(user, user.Password, Input.Password))
+            {
+                ErrorMessage = "Invalid email or password.";
+                return;
+            }
 
-        if (user.Role == "Admin")
-        {
-            NavigationManager.NavigateTo("/adminDashboard");
+            // Store login info in the scoped service
+            UserSession.UserID = user.UserID.ToString();
+            UserSession.Role = user.Role;
+
+            if (user.Role == "Admin")
+            {
+                NavigationManager.NavigateTo("/adminDashboard");
+            }
+            else if (user.Role == "Student")
+            {
+                NavigationManager.NavigateTo("/studentDashboard");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            NavigationManager.NavigateTo("/eventList");
+            ErrorMessage = "Unexpected error: " + ex.Message;
         }
     }
+
 }

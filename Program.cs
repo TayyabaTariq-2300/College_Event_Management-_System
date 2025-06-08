@@ -1,5 +1,6 @@
 using College_Event_System_Final.Components;
 using College_Event_System_Final.Models;
+using College_Event_System_Final.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddScoped<UserSessionService>();
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -15,6 +17,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddServerSideBlazor().AddCircuitOptions(options =>
+{
+    options.DetailedErrors = true;
+});
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -38,6 +44,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession();
 
 
 var app = builder.Build();
